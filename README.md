@@ -1,1 +1,16 @@
 # Minesweeper
+C'est un projet académique dont le but est d'abord de coder un démineur en C dont les règles sont les mêmes que le vrai jeu démineur puis d'ajouter une fonctionnalité qui conseille un coup. Cette dernière fonctionnalité a uniquement accès aux mêmes informations que le joueur et les coups conseillés doivent être de "bons coups".
+
+# Création du jeu
+Le jeu n'est qu'une boucle qui à chaque tour affiche l'état courant du jeu, puis demande au joueur le prochain coup à jouer parmi le dévoilement d'une case, la prose d'un drapeau, le retrait d'un drapeau et un conseil. Ensuite on vérifie que le coup est légal et on met à jour l'état du jeu. Enfin si la partie est terminée on indique au joueur s'il a gagné et sinon on continue la boucle du jeu.
+
+# Conseil ce coup
+
+## Création d'un arbre des configurations possibles
+Dans un premier temps on récupère la matrice des cases du jeu, puis on détermine l'ensemble des cases dites significatives, c'est-à-dire les cases adjacentes (y compris en diagonal) à une case révélée. Puis on applique un algorithme de backtracking à l'état courant de la partie en ne tenant compte que des coups concernant les cases significatives, dans le but de créer un arbre des configurations. Afin de minimiser le temps de construction de l'arbre et sa taille, on applique des heuristiques d'élagages. Premièrement, si pour une configuration de jeu il existe une case révélée de score non nulle telle que le nombre de mines adjacentes supposées est supérieur au score de la case révélée, alors cette configuration est impossible et on arrête d'explorer cette branche de l'arbre. Et inversement, si pour une configuration de jeu il existe une case révélée de score non nulle telle qu'en tenant compte du nombre de mines adjacentes supposées et du nombre de cases significatives adjacentes qu'il reste à parcourir il soit impossible d'atteindre le score de la case révélée, alors cette configuration de jeu est impossible. Donc on arrête d'explorer cette branche de l'arbre. De plus, on ne conserve que les branches dont les feuilles sont des configurations finales, c'est-à-dire des configurations pour lesquelles on a supposé un état pour chacune des cases significatives. À noter que le caractère final d'une configuration de jeu n'est défini que par rapport à un ensemble de cases significatives donné.
+
+Ainsi, en considérant un ensemble de cases significatives, toutes les configurations finales sont des feuilles de l'arbres obtenu et toutes les feuilles de l'arbre obtenu sont des configurations finale.
+
+## Conseil du coup optimal
+On créer une matrice nulle de la taille du niveau que l'on va appeler hitmap. Puis on parcours l'arbre des configurations et pour chaque configuration parcouru, si pour la dernière case significative considéré on l'a supposé être une mine (respectivement une case vide), on retire (respectivement ajoute) le nombre de configurations finales issues de la configuration courante à la case de la hitmap correspondant à la case significative.
+Avec la hitmap ainsi obtenue, on cherche la case dont la valeur absolue est la plus élevé, puis si sa valeur est positive on conseille au joueur de dévoiler la case significative correspondante, sinon lui conseille de poser un drapeau sur la case significative correspondante. Cette approche est probabiliste.
